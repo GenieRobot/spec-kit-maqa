@@ -1,5 +1,9 @@
 # MAQA Trello Changelog
 
+## 0.1.1 — 2026-03-26
+
+- New command: `speckit.maqa-trello.populate` — creates Trello cards from specs/*/tasks.md with checklists; skips features already on the board; safe to re-run
+
 ## 0.1.0 — 2026-03-26
 
 Initial release.
