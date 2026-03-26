@@ -1,0 +1,33 @@
+schema_version: "1.0"
+
+extension:
+  id: "maqa-trello"
+  name: "MAQA Trello Integration"
+  version: "0.1.0"
+  description: "Trello board integration for the MAQA extension. Adds board-driven coordination: card state, checklists, and real-time ticking."
+  author: "GenieRobot"
+  repository: "https://github.com/GenieRobot/spec-kit-maqa-trello"
+  license: "MIT"
+  homepage: "https://github.com/GenieRobot/spec-kit-maqa-trello"
+
+requires:
+  speckit_version: ">=0.3.0"
+
+provides:
+  commands:
+    - name: "speckit.maqa-trello.setup"
+      file: "commands/speckit.maqa-trello.setup.md"
+      description: "Bootstrap Trello board config for MAQA. Reads board via API and generates trello-config.yml."
+
+  config:
+    - name: "maqa-trello/trello-config.yml"
+      template: "config-template.yml"
+      description: "Trello board and list IDs for MAQA coordination"
+      required: true
+
+tags:
+  - "trello"
+  - "project-management"
+  - "multi-agent"
+  - "maqa"
+  - "kanban"
