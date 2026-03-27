@@ -1,5 +1,10 @@
 # MAQA Changelog
 
+## 0.1.5 — 2026-03-27
+
+- Feature agent: add CRITICAL cwd warning — Bash resets working directory to main repo between invocations; every git/test command must be prefixed with `cd <worktree> &&` to prevent index corruption
+- Setup command: propagate cwd warning into deployed `.claude/agents/feature.md` key rules
+
 ## 0.1.2 — 2026-03-26
 
 - Coordinator: auto-populate prompt triggers whenever any local spec is missing from the board (not only when board is empty)
