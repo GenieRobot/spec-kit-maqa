@@ -1291,11 +1291,16 @@ def scaffold_from_core_pack(
                     shutil.copy2(f, tmpl_cmds / f.name)
 
             # Page templates (needed for vscode-settings.json etc.)
+            # Walk recursively so subdirectories (e.g. templates/agents/) are included,
+            # matching what create-release-packages.sh does with `find templates -type f`.
             if templates_dir.is_dir():
                 tmpl_root = tmp / "templates"
-                for f in templates_dir.iterdir():
-                    if f.is_file():
-                        shutil.copy2(f, tmpl_root / f.name)
+                for src_file in templates_dir.rglob("*"):
+                    if src_file.is_file():
+                        rel = src_file.relative_to(templates_dir)
+                        dst_file = tmpl_root / rel
+                        dst_file.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(src_file, dst_file)
 
             # Scripts (bash/ and powershell/)
             for subdir in ("bash", "powershell"):
@@ -1825,6 +1830,8 @@ def init(
     offline: bool = typer.Option(False, "--offline", help="Use assets bundled in the specify-cli package instead of downloading from GitHub (no network access required). Bundled assets will become the default in v0.6.0 and this flag will be removed."),
     preset: str = typer.Option(None, "--preset", help="Install a preset during initialization (by preset ID)"),
     branch_numbering: str = typer.Option(None, "--branch-numbering", help="Branch numbering strategy: 'sequential' (001, 002, ...) or 'timestamp' (YYYYMMDD-HHMMSS)"),
+    auto_push: bool = typer.Option(False, "--auto-push/--no-auto-push", help="(Multi-agent) Automatically push feature branches after commit. Default: false."),
+    qa_cadence: str = typer.Option(None, "--qa-cadence", help="(Multi-agent) When to run QA: 'per_feature' (after each feature agent) or 'batch_end' (once when all features in a batch are done). Default: per_feature."),
 ):
     """
     Initialize a new Specify project.
@@ -1906,6 +1913,11 @@ def init(
     BRANCH_NUMBERING_CHOICES = {"sequential", "timestamp"}
     if branch_numbering and branch_numbering not in BRANCH_NUMBERING_CHOICES:
         console.print(f"[red]Error:[/red] Invalid --branch-numbering value '{branch_numbering}'. Choose from: {', '.join(sorted(BRANCH_NUMBERING_CHOICES))}")
+        raise typer.Exit(1)
+
+    QA_CADENCE_CHOICES = {"per_feature", "batch_end"}
+    if qa_cadence and qa_cadence not in QA_CADENCE_CHOICES:
+        console.print(f"[red]Error:[/red] Invalid --qa-cadence value '{qa_cadence}'. Choose from: {', '.join(sorted(QA_CADENCE_CHOICES))}")
         raise typer.Exit(1)
 
     if here:
@@ -2234,6 +2246,8 @@ def init(
                 "offline": offline,
                 "script": selected_script,
                 "speckit_version": get_speckit_version(),
+                "auto_push": auto_push,
+                "qa_cadence": qa_cadence or "per_feature",
             })
 
             # Install preset if specified
